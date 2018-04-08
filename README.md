@@ -1,4 +1,6 @@
 # OMPA
 Stub of planning project.
 
-Need to calculate time interval and needs F=∞ highspeed monochrome camera. 
+We need rotating mechanics and normal camera.
+
+And we need to calculate radiowave input/output from moleculars with complicated ones. (if we work with not better resolutions.)
