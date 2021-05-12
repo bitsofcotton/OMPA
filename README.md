@@ -1,6 +1,6 @@
 # OMPA
 Stub of planning project.
 
-We need rotating mechanics and normal camera.
-
-And we need to calculate radiowave input/output from moleculars with complicated ones. (if we work with not better resolutions.)
+# Problem.
+Can we observe some color bias on rotating materials (around up to 80km/h)??
+Then, can we invert each intensity on frequency space with some resolution??
