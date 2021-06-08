@@ -1,6 +1,5 @@
 # OMPA
-Stub of planning project.
+Tools concerns after photo fast rotating object.
 
-# Problem.
-Can we observe some color bias on rotating materials (around up to 80km/h)??
-Then, can we invert each intensity on frequency space with some resolution??
+# Stub
+The spectrum database is needed or, to calculate them in this, very fast computer is needed.
