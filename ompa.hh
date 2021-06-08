@@ -1,93 +1,70 @@
 #if !defined(_OMPA_)
 
-#include <Eigen/Core>
-#include <vector>
-#include <cmath>
-#include "../konbu/konbu_init.h"
-
 using std::vector;
-using std::sqrt;
+using std::pair;
+using std::make_pair;
 
-template <typename T> class OMPA {
-public:
-  typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Mat;
-  typedef Eigen::Matrix<T, Eigen::Dynamic, 1> Vec;
-  typedef struct {
-    ;
-  } moleculars_t;
-  OMPA();
-  ~OMPA();
-  
-  vector<vector<T> > initDicts(const vector<moleculars_t>& moleculars, const int& length) const;
-  vector<T> calibrate(const vector<vector<T> >& input, const vector<vector<T> >& zero, const vector<vector<T> >& calibrate) const;
-  vector<T> matchMixed(const vector<T>& input, const vector<vector<T> >& dicts) const;
-  vector<T> rawmatch(const vector<T>& input, const vector<vector<T> >& dicts) const;
-  
-private:
-  T thresh;
-  T cut;
-};
+extern vector<SimpleVector<myfloat> > filterM;
 
-template <typename T> OMPA<T>::OMPA() {
-  thresh = T(.001);
-  cut    = T(.2);
-}
-
-template <typename T> OMPA<T>::~OMPA() {
-  ;
-}
-
-template <typename T> vector<vector<T> > OMPA<T>::initDicts(const vector<moleculars_t>& moleculars, const int& length) const {
-  // result is expectrd to raw radiowave per frequency from moleculars_t.
-  // but moleculars_t is not so simple in general.
-  vector<vector<T> > result;
-  for(int i = 0; i < moleculars.size(); i ++) {
-    vector<T> work;
-    work.resize(length);
-    // now stub around molecular_t.
-    // with integrate each cell, we produce raw matrix from functions,
-    // then, add and invert it with LP.
-    // then, we get line from the matrix, then, we can get one solvee from PDE.
-    LP<T> konbu;
-    result.push_back(work);
+template <typename T> SimpleVector<T> particle(const vector<pair<SimpleMatrix<T>, SimpleVector<int> > >& conn, const int& sps = 80) {
+  assert(0 < conn.size() && 0 < sps);
+  SimpleVector<T> spector(sps);
+  spector.O();
+  if(conn.size() == 1) {
+    assert(0 < conn[0].second);
+    return spector;
   }
-  return result;
+  for(int i = 0; i < conn.size(); i ++)
+    spector += particle(conn[i], sps);
+  return spector /= T(conn.size());
 }
 
-template <typename T> vector<T> OMPA<T>::calibrate(const vector<vector<T> >& input, const vector<vector<T> >& zero, const vector<vector<T> >& calibrate) const {
-  // calibrate input. input is expected to the pixel of photos with r\theta rotation.
-  // result is expected to be raw radio wave with frequency from them.
-  // now stub because we don't have such rotating mechanics...
-  vector<T> result;
-  return result;
-}
-
-template <typename T> vector<T> OMPA<T>::matchMixed(const vector<T>& input, const vector<vector<T> >& dicts) const {
-  // result is expected to be the ratio of that seems to be the matter.
-  // now stub.
-  vector<T> result;
-  return result;
-}
-
-template <typename T> vector<T> OMPA<T>::rawmatch(const vector<T>& input, const vector<vector<T> >& dicts) const {
-  vector<T> result;
-  LP<T> konbu;
-  Mat A(input.size() * 2, dicts.size());
-  Vec b(input.size() * 2), c;
-  for(int i = 0; i < input.size(); i ++)
-    for(int j = 0; j < dicts.size(); j ++) {
-      A(2 * i + 0, j) =   dicts[i];
-      A(2 * i + 1, j) = - dicts[i];
-      b[2 * i + 0]    =   input[i];
-      b[2 * i + 1]    = - input[i];
-    }
-  const T bnorm(sqrt(b.dot(b)));
-  for(int i = 0; i < b.size(); i ++)
-    b[i] += bnorm * thresh;
-  konbu.inner(c, A, b);
+template <typename T> SimpleVector<T> calibrate(const SimpleVector<T>& in, const vector<pair<SimpleMatrix<T>, SimpleVector<int> > >& cal) {
+  const auto c(particle(cal, in.size()));
+  SimpleVector<T> res(in.size());
   for(int i = 0; i < c.size(); i ++)
-    result.push_back(c[i]);
-  return result;
+    res[i] = c[i] / in[i];
+  return res;
+}
+
+template <typename T> SimpleVector<T> filter(const T& speed, const SimpleVector<T>& forig) {
+  ; // can we do this??
+  return forig;
+}
+
+template <typename T> SimpleVector<T> mph(const vector<pair<SimpleVector<T>, T> >& in, const vector<vector<T> > col, const T& thresh = T(1) / T(1000)) {
+  assert(col.size() == in.size());
+  assert(filterM.size() == 3);
+  // N.B. integrate (filterM) * light(freq) d(freq) == intensity for each.
+  SimpleMatrix<T> test(in.size() * 3, in[0].first.size());
+  SimpleVector<T> testb(test.rows());
+  for(int i = 0; i < test.rows(); i ++) {
+    assert(in[0].first.size() == in[i].first.size());
+    assert(col[i].size() == 3);
+    for(int j = 0; j < 3; j ++) {
+      assert(filterM[j].size() == test.cols());
+      test.row(i * 3 + j) = filter(in[i].second, filterM[j]);
+      testb[i * 3 + j] = col[i][j];
+    }
+  }
+  auto one(test.col(0));
+  one.I(thresh);
+  return test.inner(testb - one, testb + one);
+}
+
+template <typename T> SimpleVector<T> matchParticle(SimpleVector<T> in, const vector<pair<SimpleMatrix<T>, SimpleVector<int> > >& list, const SimpleVector<T>& cal, const T& thresh = T(1) / T(1000)) {
+  assert(in.size() == cal.size());
+  for(int i = 0; i < in.size(); i ++)
+    in[i] *= cal[i];
+  auto one(in);
+  one.I(thresh);
+  SimpleMatrix<T> test(in.size(), cal.size());
+  for(int i = 0; i < cal.size(); i ++) {
+    vector<pair<SimpleMatrix<T>, SimpleVector<int> > > work;
+    work.resize(1, cal[i]);
+    test.setCol(i, particle(work, in.size()));
+  }
+  return test.inner(in - one, in + one);
 }
 
 #define _OMPA_
