@@ -2,4 +2,6 @@
 Tools concerns after photo fast rotating object.
 
 # Stub
-The spectrum database is needed or, to calculate them in this, very fast computer is needed.
+We need to observe the matters spectrum first.
+Or, we need to implement details on this.
+

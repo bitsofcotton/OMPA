@@ -12,6 +12,8 @@ template <typename T> SimpleVector<T> particle(const vector<pair<SimpleMatrix<T>
   spector.O();
   if(conn.size() == 1) {
     assert(0 < conn[0].second);
+    // XXX:
+    std::cerr << "XXX: not implemented." << std::endl;
     return spector;
   }
   for(int i = 0; i < conn.size(); i ++)
@@ -28,7 +30,7 @@ template <typename T> SimpleVector<T> calibrate(const SimpleVector<T>& in, const
 }
 
 template <typename T> SimpleVector<T> filter(const T& speed, const SimpleVector<T>& forig) {
-  ; // can we do this??
+  std::cerr << "XXX: color bias, can we do this??" << std::endl;
   return forig;
 }
 
