@@ -1,19 +1,15 @@
 CXX=	clang++
 
 # compiler flags.
-CXXFLAGS=	-I/usr/local/include/eigen3
 CXXFLAGS+=	-std=c++11
-CXXFLAGS+=	-Ofast -g2 -mtune=native
-LDFLAGS=	-lc++
+CXXFLAGS+=	-fopenmp -L/usr/local/lib -lomp
+CXXFLAGS+=	-Ofast -mtune=native -g3
+#CXXFLAGS+=	-Oz -mno-sse2 -mno-sse -mno-3dnow -mno-mmx -msoft-float -gfull
+LDFLAGS+=	-lc++
 
-CXXFLAGS+=	-DACC_LDOUBLE
-
-CLEANFILES= *.o *.dSYM tools
-
-all:	tools
-
-clean:
-	@rm -rf ${CLEANFILES}
-
-tools.o:	tools.cc
+#CXXFLAGS+=	-D_FLOAT_BITS_=32
+#CXXFLAGS+=	-D_FLOAT_BITS_=64
+#CXXFLAGS+=	-D_FLOAT_BITS_=128
+#CXXFLAGS+=	-D_FLOAT_BITS_=256
+#CXXFLAGS+=	-D_FLOAT_BITS_=512
 
