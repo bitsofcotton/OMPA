@@ -34,19 +34,17 @@ template <typename T> SimpleVector<T> filter(const T& speed, const SimpleVector<
   return forig;
 }
 
-template <typename T> SimpleVector<T> mph(const vector<pair<SimpleVector<T>, T> >& in, const vector<vector<T> > col, const T& thresh = T(1) / T(1000)) {
-  assert(col.size() == in.size());
-  assert(filterM.size() == 3);
+template <typename T> SimpleVector<T> mph(const vector<pair<SimpleVector<T>, T> >& col, const T& thresh = T(1) / T(1000)) {
+  assert(col[0].first.size() == 3 && filterM.size() == 3);
   // N.B. integrate (filterM) * light(freq) d(freq) == intensity for each.
-  SimpleMatrix<T> test(in.size() * 3, in[0].first.size());
+  SimpleMatrix<T> test(col.size() * 3, filterM[0].size());
   SimpleVector<T> testb(test.rows());
   for(int i = 0; i < test.rows(); i ++) {
-    assert(in[0].first.size() == in[i].first.size());
-    assert(col[i].size() == 3);
-    for(int j = 0; j < 3; j ++) {
+    assert(col[0].first.size() == col[i].first.size());
+    for(int j = 0; j < col[i].first.size(); j ++) {
       assert(filterM[j].size() == test.cols());
-      test.row(i * 3 + j) = filter(in[i].second, filterM[j]);
-      testb[i * 3 + j] = col[i][j];
+      test.row(i * 3 + j) = filter(col[i].second, filterM[j]);
+      testb[i * 3 + j] = col[i].first[j];
     }
   }
   auto one(test.col(0));
