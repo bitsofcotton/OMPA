@@ -52,16 +52,16 @@ template <typename T> SimpleVector<T> mph(const vector<pair<SimpleVector<T>, T> 
   return test.inner(testb - one, testb + one);
 }
 
-template <typename T> SimpleVector<T> matchParticle(SimpleVector<T> in, const vector<pair<SimpleMatrix<T>, SimpleVector<int> > >& list, const SimpleVector<T>& cal, const T& thresh = T(1) / T(1000)) {
+template <typename T> SimpleVector<T> matchParticle(SimpleVector<T> in, const SimpleVector<T>& cal, const vector<pair<SimpleMatrix<T>, SimpleVector<int> > >& list, const T& thresh = T(1) / T(1000)) {
   assert(in.size() == cal.size());
   for(int i = 0; i < in.size(); i ++)
     in[i] *= cal[i];
   auto one(in);
   one.I(thresh);
-  SimpleMatrix<T> test(in.size(), cal.size());
-  for(int i = 0; i < cal.size(); i ++) {
+  SimpleMatrix<T> test(in.size(), list.size());
+  for(int i = 0; i < list.size(); i ++) {
     vector<pair<SimpleMatrix<T>, SimpleVector<int> > > work;
-    work.resize(1, cal[i]);
+    work.resize(1, list[i]);
     test.setCol(i, particle(work, in.size()));
   }
   return test.inner(in - one, in + one);
